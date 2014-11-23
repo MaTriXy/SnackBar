@@ -24,7 +24,7 @@
 Just add the following to your `build.gradle`.
 
     dependencies {
-        compile 'com.github.mrengineer13:snackbar:0.2.0'
+        compile 'com.github.mrengineer13:snackbar:0.4.0'
     }
 
 ###Eclipse
@@ -35,17 +35,15 @@ Just add the following to your `build.gradle`.
         
 ## 2. Show a message
 
-#### Add Style to your activity
-    <item name="snackBarContainerStyle">@style/SnackBar.Container</item>
-    <item name="snackBarTextStyle">@style/SnackBar.Message</item>
-    <item name="snackBarButtonStyle">@style/SnackBar.Button</item>
-
 #### Create SnackBar
     SnackBar mSnackBar = new SnackBar(this);
     mSnackBar.show("This library is awesome!");
-    
+
   
 ## Using this library?
+
+[Score It][1]
+
 If you're using this library in one of your projects just [send me a tweet](https://twitter.com/MrEngineer13) and I'll add your project to the list.
   
 # Contribution
@@ -57,3 +55,4 @@ If you've implemented a bug fix or new feature, just create a pull request.
 
 If you have a bug to report a feature to request or have other questions, [file an issue](https://github.com/MrEngineer13/SnackBar/issues/new). I'll try to answer as soon as I can.
     
+[1]:https://play.google.com/store/apps/details?id=com.sbgapps.scoreit

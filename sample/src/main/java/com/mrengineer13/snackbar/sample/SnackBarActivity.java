@@ -16,34 +16,34 @@
 package com.mrengineer13.snackbar.sample;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Spinner;
+import android.widget.Toast;
 
+import com.github.mrengineer13.about.AboutActivity;
 import com.github.mrengineer13.snackbar.SnackBar;
 
 
-public class SnackBarActivity extends ActionBarActivity {
+public class SnackBarActivity extends ActionBarActivity
+        implements SnackBar.OnMessageClickListener {
 
     public static final String SAVED_SNACKBAR = "SAVED_SNACKBAR";
-
-    public static final String SAVED_COUNT = "SAVED_COUNT";
 
     static final int SHORT_MSG = 0, LONG_MSG = 1;
 
     static final int SHORT_SNACK = 0, MED_SNACK = 1, LONG_SNACK = 2;
 
-    static final int RED = 0, ORANGE = 1, YELLOW = 2, GREEN = 3, BLUE = 4, PURPLE = 5, PINK = 6, DEFAULT = 7, ALERT = 8, CONFIRM = 9, INFO = 10;
+    static final int DEFAULT = 0, ALERT = 1, CONFIRM = 2, INFO = 3;
 
     static final int ACTION_BTN = 0, NO_ACTION_BTN = 1;
 
-    private Spinner mMsgLengthOptions, mDurationOptions, mActionBtnOptions, mActionBtnColorOptions;
+    static final int STRING_TYPE_STRING = 0, STRING_TYPE_RESOURCE = 1;
 
-    private String[] mSnackNames;
-
-    private int mSnackIndex = 0;
+    private Spinner mMsgLengthOptions, mDurationOptions, mActionBtnOptions, mActionBtnColorOptions, mStringTypeOptions;
 
     private SnackBar mSnackBar;
 
@@ -52,13 +52,14 @@ public class SnackBarActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_snack_bar);
 
-        mSnackNames = getResources().getStringArray(R.array.snack_names);
         mSnackBar = new SnackBar(this);
+        mSnackBar.setOnClickListener(this);
 
         mMsgLengthOptions = (Spinner) findViewById(R.id.message_length_selector);
         mDurationOptions = (Spinner) findViewById(R.id.snack_duration_selector);
         mActionBtnOptions = (Spinner) findViewById(R.id.action_btn_presence_selector);
         mActionBtnColorOptions = (Spinner) findViewById(R.id.action_btn_color);
+        mStringTypeOptions = (Spinner) findViewById(R.id.action_btn_string_type);
     }
 
 
@@ -75,29 +76,43 @@ public class SnackBarActivity extends ActionBarActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_about) {
+            startActivity(AboutActivity.getAboutActivityIntent(this, "MrEngineer13", "https://github.com/MrEngineer13",
+                    "MrEngineer13@live.com", "@MrEngineer13",
+                    "https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=K6PSQMTJYG5VJ",
+                    true, "MrEngineer13", null));
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
-    public void onCreateClicked(View view){
+    public void onCreateClicked(View view) {
         String message = "";
+        int messageRes = -1;
         short duration = 0;
-        SnackBar.Style style = SnackBar.Style.DEFAULT;
+        SnackBar.Style style;
 
+        int selectedStringType = mStringTypeOptions.getSelectedItemPosition();
         int selectedMessageLength = mMsgLengthOptions.getSelectedItemPosition();
-        switch (selectedMessageLength){
+        switch (selectedMessageLength) {
             case SHORT_MSG:
-                message = "This is a one-line message.";
+                if (selectedStringType == STRING_TYPE_STRING) {
+                    message = "This is a one-line message.";
+                } else {
+                    messageRes = R.string.short_message;
+                }
                 break;
             case LONG_MSG:
-                message = "This message is a lot longer, it should stretch at least two lines. ";
+                if (selectedStringType == STRING_TYPE_STRING) {
+                    message = "This message is a lot longer, it should stretch at least two lines. ";
+                } else {
+                    messageRes = R.string.long_message;
+                }
                 break;
         }
 
         int selectedDuration = mDurationOptions.getSelectedItemPosition();
-        switch (selectedDuration){
+        switch (selectedDuration) {
             case SHORT_SNACK:
                 duration = SnackBar.SHORT_SNACK;
                 break;
@@ -110,28 +125,8 @@ public class SnackBarActivity extends ActionBarActivity {
         }
 
         int selectedActionBtnColor = mActionBtnColorOptions.getSelectedItemPosition();
-        switch (selectedActionBtnColor){
-            case RED:
-                style = SnackBar.Style.RED;
-                break;
-            case ORANGE:
-                style = SnackBar.Style.ORANGE;
-                break;
-            case YELLOW:
-                style = SnackBar.Style.YELLOW;
-                break;
-            case GREEN:
-                style = SnackBar.Style.GREEN;
-                break;
-            case BLUE:
-                style = SnackBar.Style.BLUE;
-                break;
-            case PURPLE:
-                style = SnackBar.Style.PURPLE;
-                break;
-            case PINK:
-                style = SnackBar.Style.PINK;
-                break;
+        switch (selectedActionBtnColor) {
+            default:
             case DEFAULT:
                 style = SnackBar.Style.DEFAULT;
                 break;
@@ -147,12 +142,20 @@ public class SnackBarActivity extends ActionBarActivity {
         }
 
         int selectedActionBtnExistance = mActionBtnOptions.getSelectedItemPosition();
-        switch (selectedActionBtnExistance){
+        switch (selectedActionBtnExistance) {
             case ACTION_BTN:
-                mSnackBar.show(message, "Action", style, duration);
+                if (messageRes <= 0) {
+                    mSnackBar.show(message, "Action", style, duration);
+                } else {
+                    mSnackBar.show(messageRes, R.string.action, style, duration);
+                }
                 break;
             case NO_ACTION_BTN:
-                mSnackBar.show(message, duration);
+                if (messageRes <= 0) {
+                    mSnackBar.show(message, duration);
+                } else {
+                    mSnackBar.show(messageRes, duration);
+                }
                 break;
         }
 
@@ -164,8 +167,6 @@ public class SnackBarActivity extends ActionBarActivity {
         super.onSaveInstanceState(saveState);
         // use this to save your snacks for later
         saveState.putBundle(SAVED_SNACKBAR, mSnackBar.onSaveInstanceState());
-        // just for saving the number of times the button has been pressed
-        saveState.putInt(SAVED_COUNT, mSnackIndex);
     }
 
     @Override
@@ -173,7 +174,10 @@ public class SnackBarActivity extends ActionBarActivity {
         super.onRestoreInstanceState(loadState);
         // use this to load your snacks for later
         mSnackBar.onRestoreInstanceState(loadState.getBundle(SAVED_SNACKBAR));
-        // might as well load the counter too
-        mSnackIndex = loadState.getInt(SAVED_COUNT);
+    }
+
+    @Override
+    public void onMessageClick(Parcelable token) {
+        Toast.makeText(this, "Button clicked!", Toast.LENGTH_LONG).show();
     }
 }
