@@ -17,18 +17,19 @@ package com.mrengineer13.snackbar.sample;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.github.mrengineer13.about.AboutActivity;
 import com.github.mrengineer13.snackbar.SnackBar;
 
 
-public class SnackBarActivity extends ActionBarActivity
+public class SnackBarActivity extends AppCompatActivity
         implements SnackBar.OnMessageClickListener {
 
     public static final String SAVED_SNACKBAR = "SAVED_SNACKBAR";
@@ -43,7 +44,8 @@ public class SnackBarActivity extends ActionBarActivity
 
     static final int STRING_TYPE_STRING = 0, STRING_TYPE_RESOURCE = 1;
 
-    private Spinner mMsgLengthOptions, mDurationOptions, mActionBtnOptions, mActionBtnColorOptions, mStringTypeOptions;
+    private Spinner mMsgLengthOptions, mDurationOptions, mActionBtnOptions,
+            mActionBtnColorOptions, mBGColorOptions, mStringTypeOptions;
 
     private SnackBar mSnackBar;
 
@@ -52,13 +54,11 @@ public class SnackBarActivity extends ActionBarActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_snack_bar);
 
-        mSnackBar = new SnackBar(this);
-        mSnackBar.setOnClickListener(this);
-
         mMsgLengthOptions = (Spinner) findViewById(R.id.message_length_selector);
         mDurationOptions = (Spinner) findViewById(R.id.snack_duration_selector);
         mActionBtnOptions = (Spinner) findViewById(R.id.action_btn_presence_selector);
         mActionBtnColorOptions = (Spinner) findViewById(R.id.action_btn_color);
+        mBGColorOptions = (Spinner) findViewById(R.id.bg_color);
         mStringTypeOptions = (Spinner) findViewById(R.id.action_btn_string_type);
     }
 
@@ -91,6 +91,8 @@ public class SnackBarActivity extends ActionBarActivity
         int messageRes = -1;
         short duration = 0;
         SnackBar.Style style;
+        SnackBar.Style bgStyle;
+        int bgColor;
 
         int selectedStringType = mStringTypeOptions.getSelectedItemPosition();
         int selectedMessageLength = mMsgLengthOptions.getSelectedItemPosition();
@@ -141,39 +143,71 @@ public class SnackBarActivity extends ActionBarActivity
                 break;
         }
 
+        int selectedBGColor = mBGColorOptions.getSelectedItemPosition();
+        switch (selectedBGColor) {
+            default:
+            case DEFAULT:
+                bgColor = R.color.sb__snack_bkgnd;
+                break;
+            case ALERT:
+                bgColor = R.color.sb__snack_alert_bkgnd;
+                break;
+        }
+
         int selectedActionBtnExistance = mActionBtnOptions.getSelectedItemPosition();
         switch (selectedActionBtnExistance) {
             case ACTION_BTN:
                 if (messageRes <= 0) {
-                    mSnackBar.show(message, "Action", style, duration);
+                    mSnackBar = new SnackBar.Builder(this)
+                            .withOnClickListener(this)
+                            .withMessage(message)
+                            .withActionMessage("Action")
+                            .withStyle(style)
+                            .withBackgroundColorId(bgColor)
+                            .withDuration(duration)
+                            .show();
                 } else {
-                    mSnackBar.show(messageRes, R.string.action, style, duration);
+                    mSnackBar = new SnackBar.Builder(this)
+                            .withOnClickListener(this)
+                            .withMessageId(messageRes)
+                            .withActionMessageId(R.string.action)
+                            .withStyle(style)
+                            .withBackgroundColorId(bgColor)
+                            .withDuration(duration)
+                            .show();
                 }
                 break;
             case NO_ACTION_BTN:
                 if (messageRes <= 0) {
-                    mSnackBar.show(message, duration);
+                    mSnackBar = new SnackBar.Builder(this)
+                            .withMessage(message)
+                            .withBackgroundColorId(bgColor)
+                            .withDuration(duration)
+                            .show();
                 } else {
-                    mSnackBar.show(messageRes, duration);
+                    mSnackBar = new SnackBar.Builder(this)
+                            .withMessageId(messageRes)
+                            .withBackgroundColorId(bgColor)
+                            .withDuration(duration)
+                            .show();
                 }
+
                 break;
         }
-
-
     }
 
     @Override
     protected void onSaveInstanceState(Bundle saveState) {
         super.onSaveInstanceState(saveState);
         // use this to save your snacks for later
-        saveState.putBundle(SAVED_SNACKBAR, mSnackBar.onSaveInstanceState());
+        //saveState.putBundle(SAVED_SNACKBAR, mSnackBar.onSaveInstanceState());
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle loadState) {
         super.onRestoreInstanceState(loadState);
         // use this to load your snacks for later
-        mSnackBar.onRestoreInstanceState(loadState.getBundle(SAVED_SNACKBAR));
+        //mSnackBar.onRestoreInstanceState(loadState.getBundle(SAVED_SNACKBAR));
     }
 
     @Override
